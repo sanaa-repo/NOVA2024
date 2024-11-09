@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Drawing with GPT</title>
+    <style>
+        canvas { border: 1px solid black; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h3>Enter your drawing prompt:</h3>
+    <input type="text" id="prompt" placeholder="e.g., Draw a large red circle in the center">
+    <button onclick="sendPrompt()">Draw Shape</button>
+    <canvas id="canvas" width="500" height="500"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        async function sendPrompt() {
+            const prompt = document.getElementById('prompt').value;
+
+            // Send prompt to the backend
+            const response = await fetch('http://localhost:3000/interpret', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            });
+            const functionCall = await response.json();
+
+            // Parse the function name and arguments from GPT’s response
+            const { name, arguments: args } = functionCall;
+            const parameters = JSON.parse(args);
+
+            // Call the corresponding function to draw the shape on the canvas
+            if (name === "draw_circle") {
+                drawCircle(parameters);
+            } 
+            // Add other shape function calls here, e.g., drawRectangle(parameters)
+        }
+
+        // Function to draw a circle based on GPT's response
+        function drawCircle({ x, y, size, color, rotation }) {
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear canvas
+            ctx.translate(x, y);
+            ctx.rotate(rotation * Math.PI / 180);
+            ctx.beginPath();
+            ctx.arc(0, 0, size, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // Define other shape functions here, e.g., drawRectangle
+    </script>
+</body>
+</html>
