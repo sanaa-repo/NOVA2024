@@ -28,6 +28,22 @@ const functionDefinitions = [
             required: ["x", "y", "size", "color"]
         }
     },
+    {
+        name: "draw_rectangle",
+        description: "Draws a rectangle on the canvas",
+        parameters: {
+            type: "object",
+            properties: {
+                x: { type: "integer", description: "X-coordinate of the rectangle center" },
+                y: { type: "integer", description: "Y-coordinate of the rectangle center" },
+                width: { type: "integer", description: "Width of the rectangle" },
+                height: { type: "integer", description: "Height of the rectangle" },
+                color: { type: "string", description: "Color of the rectangle" },
+                rotation: { type: "number", description: "Rotation angle in degrees" }
+            },
+            required: ["x", "y", "width", "height", "color"]
+        }
+    }
     // Additional shapes here (e.g., draw_rectangle, draw_triangle)
 ];
 
