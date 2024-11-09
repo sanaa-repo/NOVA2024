@@ -147,6 +147,66 @@ async function getMovementDistanceFromPrompt(prompt) {
     return parseInt(estimatedDistance, 10) || 20; // Default to 20px if the model response is unclear
 }
 */
+
+let shapes = []; // Array to store all drawn shapes
+let shapeCounter = 0; // A counter to generate unique IDs for shapes
+
+app.post('/interpret', async (req, res) => {
+    const userPrompt = req.body.prompt;
+
+    try {
+        // Call GPT API with function definitions
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o",  // Or another supported model
+            messages: [{ role: "user", content: userPrompt }],
+            functions: functionDefinitions,
+            function_call: "auto", // Automatically call the relevant function
+        });
+
+        // Get the function call result
+        const functionCall = response.choices[0].message.function_call;
+        //res.json(functionCall);
+        
+        // If there's no function call, return an error
+        if (!functionCall) {
+            return res.status(400).json({ error: 'No valid function call detected' });
+        }
+
+        // Parse the function name and arguments from GPT’s response
+        const { name, arguments: args } = functionCall;
+        const parameters = JSON.parse(args); // Expect parameters in JSON format
+
+        if (name === "draw_circle") {
+            const id = shapeCounter++;
+            shapes.push({ id, type: "circle", ...parameters });
+            return res.json({ id, action: "draw", shape: "circle" });
+        } else if (name === "draw_triangle") {
+            const id = shapeCounter++;
+            shapes.push({ id, type: "triangle", ...parameters });
+            return res.json({ id, action: "draw", shape: "triangle" });
+        } else if (name === "draw_rectangle") {
+            const id = shapeCounter++;
+            shapes.push({ id, type: "rectangle", ...parameters });
+            return res.json({ id, action: "draw", shape: "rectangle" });
+        } else if (name === "draw_line") {
+            const id = shapeCounter++;
+            shapes.push({ id, type: "line", ...parameters });
+            return res.json({ id, action: "draw", shape: "line" });
+        } else if (name === "move_shape") {
+            // Handle moving shapes
+            const id = parameters.id;
+            const shape = shapes.find(shape => shape.id === id);
+            if (shape) {
+                shape.positions = parameters.positions;
+                return res.json({ id, action: "move", shape: shape });
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+/*
 app.post('/interpret', async (req, res) => {
     const userPrompt = req.body.prompt;
 
@@ -160,7 +220,7 @@ app.post('/interpret', async (req, res) => {
 
     // Get the function call result
     const functionCall = response.choices[0].message.function_call;
-    /*
+    
     if (functionCall.name === "draw_circle" || functionCall.name === "draw_triangle") {
         // Draw shape and store it
         const shapeDetails = JSON.parse(functionCall.arguments);
@@ -192,8 +252,8 @@ app.post('/interpret', async (req, res) => {
             }
         }
     }
-    */
+    
     res.json(functionCall);
 });
-
+*/
 app.listen(3000, () => console.log('Server is running on http://localhost:3000'));

@@ -22,7 +22,9 @@
         let currentShape = {};
         let currentPositionIndex = 0;
         let shapePositions = [];
-        //let shapes = [];
+        
+        let shapes = [];  // Array to store all shapes
+        let animationIntervals = [];  // Track intervals for animating shapes
 
         async function sendPrompt() {
             const prompt = document.getElementById('prompt').value;
@@ -41,18 +43,57 @@
     
             // Call the corresponding function to draw the shape on the canvas
             if (name === "draw_circle") {
-                drawCircle(parameters);
+                addCircle(parameters);
             } else if (name === "draw_triangle") {
-                drawTriangle(parameters);
+                addTriangle(parameters);
             } else if (name === "draw_rectangle") {
-                drawRectangle(parameters);
+                addRectangle(parameters);
             } else if (name === "draw_line") {
-                drawLine(parameters);
+                addLine(parameters);
             } else if (name === "move_shape") {
                 moveShape(parameters);
             }
         }
-    
+        
+        function addCircle(id, { x, y, size, color, rotation }) {
+            const shape = { id, type: 'circle', x, y, size, color, rotation };
+            shapes.push(shape);
+            drawAllShapes(); // Redraw all shapes whenever a new one is added
+        }
+
+        function addTriangle(id, { x, y, size, color, rotation }) {
+            const shape = { id, type: 'triangle', x, y, size, color, rotation };
+            shapes.push(shape);
+            drawAllShapes(); // Redraw all shapes whenever a new one is added
+        }
+
+        function addRectangle(id, { x, y, width, height, color, rotation }) {
+            const shape = { id, type: 'rectangle', x, y, width, height, color, rotation };
+            shapes.push(shape);
+            drawAllShapes(); // Redraw all shapes whenever a new one is added
+        }
+
+        function addLine(id, { x1, y1, x2, y2, color, width }) {
+            const shape = { id, type: 'line', x1, y1, x2, y2, color, width };
+            shapes.push(shape);
+            drawAllShapes(); // Redraw all shapes whenever a new one is added
+        }
+
+        function drawAllShapes() {
+            clearCanvas();
+            shapes.forEach(shape => {
+                if (shape.type === 'circle') {
+                    drawCircleOnCanvas(shape);
+                } else if (shape.type === 'triangle') {
+                    drawTriangleOnCanvas(shape);
+                } else if (shape.type === 'rectangle') {
+                    drawRectangleOnCanvas(shape);
+                } else if (shape.type === 'line') {
+                    drawLineOnCanvas(shape);
+                }
+            });
+        }
+
         // Function to draw a circle based on GPT's response
         function drawCircle({ x, y, size, color, rotation }) {
             ctx.save();
@@ -65,7 +106,7 @@
             ctx.restore();
 
             // Store the shape details
-            shapes.push({ type: "circle", x, y, size, color, rotation });
+            //shapes.push({ type: "circle", x, y, size, color, rotation });
         }
     
         // Function to draw a triangle based on GPT's response
@@ -85,7 +126,7 @@
             ctx.restore();
 
             // Store the shape details
-            shapes.push({ type: "triangle", x, y, size, color, rotation });
+            //shapes.push({ type: "triangle", x, y, size, color, rotation });
         }
         
         // Function to draw a rectangle based on GPT's response
@@ -99,7 +140,7 @@
             ctx.restore();
 
             // Store the shape details
-            shapes.push({ type: "rectangle", x, y, width, height, color, rotation });
+            //shapes.push({ type: "rectangle", x, y, width, height, color, rotation });
         }
 
         // Function to draw a line based on GPT's response
@@ -115,7 +156,7 @@
             ctx.restore();
 
             // Store the shape details
-            shapes.push({ type: "line", x1, y1, x2, y2, color, width });
+            //shapes.push({ type: "line", x1, y1, x2, y2, color, width });
         }
 
         // Function to clear the canvas
@@ -158,7 +199,7 @@
                 redrawCanvas();
             }
         }
-        */
+        
         function moveShape(parameters) {
             shapePositions = parameters.positions; // Store the list of positions
             currentShape = {
@@ -172,12 +213,15 @@
             setInterval(() => {
                 if (currentPositionIndex < shapePositions.length) {
                     const { x, y } = shapePositions[currentPositionIndex];
+
                     // Update the circle's position and redraw it
                     currentShape.x = x;
                     currentShape.y = y;
+                    
                     // Clear canvas and redraw the circle at the new position
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     drawCircle(currentShape); // Redraw the circle at the new position
+
                     currentPositionIndex++; // Move to the next position
                 } else {
                     // Loop back to the first position if we have reached the end of the list
@@ -185,9 +229,31 @@
                 }
             }, 100); // Adjust the interval as needed (move every second)
         }
+        */
+        function moveShape(id, { positions }) {
+            const shape = shapes.find(s => s.id === id);
+            if (!shape) return; // Return if shape is not found
+
+            let positionIndex = 0;
+            const intervalId = setInterval(() => {
+                if (positionIndex < positions.length) {
+                    const { x, y } = positions[positionIndex];
+                    shape.x = x;
+                    shape.y = y;
+                    drawAllShapes(); // Redraw all shapes
+                    positionIndex++;
+                } else {
+                    clearInterval(intervalId); // Stop the movement
+                }
+            }, 100); // Adjust the interval for movement speed
+        }
 
         // Add event listener to a button for clearing the canvas
-        document.getElementById('clearBtn').addEventListener('click', clearCanvas);
+        //document.getElementById('clearBtn').addEventListener('click', clearCanvas);
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            shapes = [];  // Clear shapes
+            drawAllShapes();  // Redraw empty canvas
+        });
     </script>
 </body>
 </html>
