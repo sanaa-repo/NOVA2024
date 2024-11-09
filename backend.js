@@ -83,7 +83,7 @@ const functionDefinitions = [
             required: ["x1", "y1", "x2", "y2", "color"]
         }
     },
-    {
+    /*{
         name: "redraw_shape",
         description: "Redraws an already existing shape in a certain direction",
         parameters: {
@@ -95,7 +95,7 @@ const functionDefinitions = [
             },
             required: ["shape_id", "direction", "distance"]
         }
-    },
+    },*/
     {
         name: "move_shape",
         description: "Moves or translates the circle to a specified position or direction",
@@ -122,7 +122,7 @@ const functionDefinitions = [
         },
     },
 ];
-
+/*
 // In-memory storage of shapes (id, coordinates, type, etc.)
 let shapes = [];
 let shapeCounter = 0;
@@ -146,7 +146,7 @@ async function getMovementDistanceFromPrompt(prompt) {
     const estimatedDistance = response.choices[0].message.content.trim();
     return parseInt(estimatedDistance, 10) || 20; // Default to 20px if the model response is unclear
 }
-
+*/
 app.post('/interpret', async (req, res) => {
     const userPrompt = req.body.prompt;
 
@@ -160,7 +160,7 @@ app.post('/interpret', async (req, res) => {
 
     // Get the function call result
     const functionCall = response.choices[0].message.function_call;
-
+    /*
     if (functionCall.name === "draw_circle" || functionCall.name === "draw_triangle") {
         // Draw shape and store it
         const shapeDetails = JSON.parse(functionCall.arguments);
@@ -192,7 +192,7 @@ app.post('/interpret', async (req, res) => {
             }
         }
     }
-
+    */
     res.json(functionCall);
 });
 

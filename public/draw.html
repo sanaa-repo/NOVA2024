@@ -18,9 +18,11 @@
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        
-        // Store the shapes that are drawn
-        let shapes = [];
+
+        let currentShape = {};
+        let currentPositionIndex = 0;
+        let shapePositions = [];
+        //let shapes = [];
 
         async function sendPrompt() {
             const prompt = document.getElementById('prompt').value;
@@ -46,6 +48,8 @@
                 drawRectangle(parameters);
             } else if (name === "draw_line") {
                 drawLine(parameters);
+            } else if (name === "move_shape") {
+                moveShape(parameters);
             }
         }
     
@@ -118,7 +122,7 @@
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clears the canvas
         }
-        
+        /*
         // Function to redraw all shapes
         function redrawCanvas() {
             clearCanvas();
@@ -130,7 +134,7 @@
                 }
             });
         }
-
+        
         // Function to move a shape based on GPT's response
         function moveShape({ shape_id, direction, distance }) {
             const shape = shapes.find(s => s.id === shape_id);
@@ -153,6 +157,33 @@
                 // Redraw all shapes
                 redrawCanvas();
             }
+        }
+        */
+        function moveShape(parameters) {
+            shapePositions = parameters.positions; // Store the list of positions
+            currentShape = {
+                x: 0,
+                y: 0,
+                size: parameters.size,
+                color: parameters.color,
+                rotation: parameters.rotation
+            };
+            // Loop through the positions and move the shape to each position
+            setInterval(() => {
+                if (currentPositionIndex < shapePositions.length) {
+                    const { x, y } = shapePositions[currentPositionIndex];
+                    // Update the circle's position and redraw it
+                    currentShape.x = x;
+                    currentShape.y = y;
+                    // Clear canvas and redraw the circle at the new position
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    drawCircle(currentShape); // Redraw the circle at the new position
+                    currentPositionIndex++; // Move to the next position
+                } else {
+                    // Loop back to the first position if we have reached the end of the list
+                    currentPositionIndex = 0;
+                }
+            }, 100); // Adjust the interval as needed (move every second)
         }
 
         // Add event listener to a button for clearing the canvas
