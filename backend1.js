@@ -74,7 +74,7 @@ app.post('/interpret', async (req, res) => {
 
     // Call GPT API with function definitions to interpret the prompt
     const response = await openai.chat.completions.create({
-        model: "gpt-4o",  // Or another supported model
+        model: "gpt-4",  // Using GPT-4 for more accurate interpretation
         messages: [{ role: "user", content: userPrompt }],
         functions: functionDefinitions,
         function_call: "auto", // Automatically calls the relevant function

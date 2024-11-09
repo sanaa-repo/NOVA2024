@@ -38,9 +38,8 @@
                 drawCircle(parameters);
             } else if (name === "draw_triangle") {
                 drawTriangle(parameters);
-            } else if (name === "draw_rectangle") {
-                drawRectangle(parameters);
-            }
+            } 
+            // You can add other shape functions here as needed
         }
     
         // Function to draw a circle based on GPT's response
@@ -75,17 +74,6 @@
             ctx.fill();
             ctx.restore();
         }
-        
-        // Function to draw a rectangle based on GPT's response
-        function drawRectangle({ x = 100, y = 100, width = 100, height = 50, color = 'black', rotation = 0 }) {
-            ctx.save();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.translate(x, y);
-            ctx.rotate(rotation * Math.PI / 180);
-            ctx.fillStyle = color;
-            ctx.fillRect(-width / 2, -height / 2, width, height);
-            ctx.restore();
-        }
-    </script>
+    </script>    
 </body>
 </html>

@@ -1,8 +1,8 @@
 const { OpenAI } = require('openai');
 
 const openai = new OpenAI({
-  apiKey: TEAM_API_KEY, // set this!!
-  baseURL: PROXY_ENDPOINT // and this!!
+  apiKey: "sk-5UdUdZqd1543Q-wnfsRaoA",
+  baseURL: "https://nova-litellm-proxy.onrender.com"
 });
 
 async function main() {
