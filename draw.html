@@ -17,6 +17,9 @@
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        let currentShape = {};
+        let currentPositionIndex = 0;
+        let shapePositions = [];
 
         async function sendPrompt() {
             const prompt = document.getElementById('prompt').value;
@@ -36,14 +39,17 @@
             // Call the corresponding function to draw the shape on the canvas
             if (name === "draw_circle") {
                 drawCircle(parameters);
-            } 
+            }  else if (name === "move_shape") {
+                moveShape(parameters);
+            }
             // Add other shape function calls here, e.g., drawRectangle(parameters)
         }
 
         // Function to draw a circle based on GPT's response
         function drawCircle({ x, y, size, color, rotation }) {
+            console.log(currentShape);
             ctx.save();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.translate(x, y);
             ctx.rotate(rotation * Math.PI / 180);
             ctx.beginPath();
@@ -51,6 +57,37 @@
             ctx.fillStyle = color;
             ctx.fill();
             ctx.restore();
+        }
+
+        function moveShape(parameters) {
+            shapePositions = parameters.positions; // Store the list of positions
+            currentShape = {
+                x: 0,
+                y: 0,
+                size: parameters.size,
+                color: parameters.color,
+                rotation: parameters.rotation
+            };
+
+            // Loop through the positions and move the shape to each position
+            setInterval(() => {
+                if (currentPositionIndex < shapePositions.length) {
+                    const { x, y } = shapePositions[currentPositionIndex];
+
+                    // Update the circle's position and redraw it
+                    currentShape.x = x;
+                    currentShape.y = y;
+
+                    // Clear canvas and redraw the circle at the new position
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    drawCircle(currentShape); // Redraw the circle at the new position
+
+                    currentPositionIndex++; // Move to the next position
+                } else {
+                    // Loop back to the first position if we have reached the end of the list
+                    currentPositionIndex = 0;
+                }
+            }, 100); // Adjust the interval as needed (move every second)
         }
 
         // Define other shape functions here, e.g., drawRectangle

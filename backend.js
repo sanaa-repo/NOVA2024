@@ -19,8 +19,8 @@ const functionDefinitions = [
         parameters: {
             type: "object",
             properties: {
-                x: { type: "integer", description: "X-coordinate of the circle center" },
-                y: { type: "integer", description: "Y-coordinate of the circle center" },
+                x: { type: "integer", description: "X-coordinate of the circle center, the width is 500, left-most is 0,right-most is 500" },
+                y: { type: "integer", description: "Y-coordinate of the circle center, the height is 500, upper-most is 0, lower-most is 500" },
                 size: { type: "integer", description: "Radius of the circle" },
                 color: { type: "string", description: "Color of the circle" },
                 rotation: { type: "number", description: "Rotation angle in degrees" },
@@ -29,6 +29,31 @@ const functionDefinitions = [
         }
     },
     // Additional shapes here (e.g., draw_rectangle, draw_triangle)
+    {
+        name: "move_shape",
+        description: "Moves or translates the circle to a specified position or direction",
+        parameters: {
+            type: "object",
+            properties: {
+                size: { type: "integer", description: "Radius of the circle" },
+                color: { type: "string", description: "Color of the circle" },
+                rotation: { type: "number", description: "Rotation angle in degrees" },
+                positions: {
+                    type: "array",
+                    description: "A list of random (x, y) positions, of length at least 50, that gradually moves the the desired position.",
+                    items: {
+                        type: "object",
+                        properties: {
+                            x: { type: "number", description: "X position, the width is 500, left-most is 0,right-most is 500" },
+                            y: { type: "number", description: "Y position, the height is 500, upper-most is 0, lower-most is 500" },
+                        },
+                        required: ["x", "y"],
+                    },
+                },
+            },
+            required: ["positions", "size", "color", "rotation"],
+        },
+    },
 ];
 
 app.post('/interpret', async (req, res) => {
