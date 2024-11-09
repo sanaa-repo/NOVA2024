@@ -66,22 +66,107 @@ const functionDefinitions = [
             },
             required: ["x", "y", "width", "height", "color"]
         }
+    },
+    {
+        name: "draw_line",
+        description: "Draws a line on the canvas",
+        parameters: {
+            type: "object",
+            properties: {
+                x1: { type: "integer", description: "X-coordinate of the start point" },
+                y1: { type: "integer", description: "Y-coordinate of the start point" },
+                x2: { type: "integer", description: "X-coordinate of the end point" },
+                y2: { type: "integer", description: "Y-coordinate of the end point" },
+                color: { type: "string", description: "Color of the line" },
+                width: { type: "integer", description: "Width of the line" },
+            },
+            required: ["x1", "y1", "x2", "y2", "color"]
+        }
+    },
+    {
+        name: "move_shape",
+        description: "Moves an already drawn shape in a certain direction",
+        parameters: {
+            type: "object",
+            properties: {
+                shape_id: { type: "integer", description: "ID of the shape to move" },
+                direction: { type: "string", description: "Direction to move (up, down, left, right)" },
+                distance: { type: "integer", description: "Distance to move the shape (in pixels)" }
+            },
+            required: ["shape_id", "direction", "distance"]
+        }
     }
 ];
+
+// In-memory storage of shapes (id, coordinates, type, etc.)
+let shapes = [];
+let shapeCounter = 0;
+
+async function getMovementDistanceFromPrompt(prompt) {
+    // Ask the model to estimate the distance based on the user's natural language
+    const response = await openai.chat.completions.create({
+        model: "gpt-4o", // Or another supported model
+        messages: [
+            {
+                role: "system",
+                content: "You are a helpful assistant that understands spatial movement."
+            },
+            {
+                role: "user",
+                content: `Based on the following prompt, estimate the movement distance in pixels (in a range like 10, 20, or 50 px): "${prompt}"`
+            }
+        ]
+    });
+
+    const estimatedDistance = response.choices[0].message.content.trim();
+    return parseInt(estimatedDistance, 10) || 20; // Default to 20px if the model response is unclear
+}
 
 app.post('/interpret', async (req, res) => {
     const userPrompt = req.body.prompt;
 
-    // Call GPT API with function definitions to interpret the prompt
+    // First, try to interpret the request with the model
     const response = await openai.chat.completions.create({
-        model: "gpt-4o",  // Or another supported model
+        model: "gpt-4o", // Or another supported model
         messages: [{ role: "user", content: userPrompt }],
         functions: functionDefinitions,
         function_call: "auto", // Automatically calls the relevant function
     });
 
-    // Get the function call result from the model's response
     const functionCall = response.choices[0].message.function_call;
+
+    if (functionCall.name === "draw_circle" || functionCall.name === "draw_triangle") {
+        // Draw shape and store it
+        const shapeDetails = JSON.parse(functionCall.arguments);
+        shapeDetails.id = shapeCounter++;
+        shapes.push(shapeDetails);
+    } else if (functionCall.name === "move_shape") {
+        const moveDetails = JSON.parse(functionCall.arguments);
+        const { shape_id, direction } = moveDetails;
+
+        // Estimate the distance based on the user prompt
+        const distance = await getMovementDistanceFromPrompt(userPrompt);
+
+        // Find the shape to move
+        const shape = shapes.find(s => s.id === shape_id);
+        if (shape) {
+            switch (direction) {
+                case 'up':
+                    shape.y -= distance;
+                    break;
+                case 'down':
+                    shape.y += distance;
+                    break;
+                case 'left':
+                    shape.x -= distance;
+                    break;
+                case 'right':
+                    shape.x += distance;
+                    break;
+            }
+        }
+    }
+
     res.json(functionCall);
 });
 

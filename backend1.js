@@ -1,3 +1,5 @@
+// Uses gpt-4 rather than gpt-4o
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const { OpenAI } = require('openai');

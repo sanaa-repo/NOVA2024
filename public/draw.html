@@ -12,12 +12,16 @@
     <h3>Enter your drawing prompt:</h3>
     <input type="text" id="prompt" placeholder="e.g., Draw a large red circle in the center">
     <button onclick="sendPrompt()">Draw Shape</button>
+    <button id="clearBtn">Clear Canvas</button>
     <canvas id="canvas" width="500" height="500"></canvas>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-    
+        
+        // Store the shapes that are drawn
+        let shapes = [];
+
         async function sendPrompt() {
             const prompt = document.getElementById('prompt').value;
     
@@ -40,13 +44,14 @@
                 drawTriangle(parameters);
             } else if (name === "draw_rectangle") {
                 drawRectangle(parameters);
+            } else if (name === "draw_line") {
+                drawLine(parameters);
             }
         }
     
         // Function to draw a circle based on GPT's response
         function drawCircle({ x, y, size, color, rotation }) {
             ctx.save();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear canvas
             ctx.translate(x, y);
             ctx.rotate(rotation * Math.PI / 180);
             ctx.beginPath();
@@ -54,38 +59,104 @@
             ctx.fillStyle = color;
             ctx.fill();
             ctx.restore();
+
+            // Store the shape details
+            shapes.push({ type: "circle", x, y, size, color, rotation });
         }
     
         // Function to draw a triangle based on GPT's response
         function drawTriangle({ x, y, size, color, rotation }) {
             ctx.save();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear canvas
             ctx.translate(x, y);
             ctx.rotate(rotation * Math.PI / 180);
-    
+
             const height = size * Math.sqrt(3) / 2;
-    
             ctx.beginPath();
             ctx.moveTo(0, -height / 2);                // Top vertex
             ctx.lineTo(-size / 2, height / 2);         // Bottom-left vertex
             ctx.lineTo(size / 2, height / 2);          // Bottom-right vertex
             ctx.closePath();
-    
             ctx.fillStyle = color;
             ctx.fill();
             ctx.restore();
+
+            // Store the shape details
+            shapes.push({ type: "triangle", x, y, size, color, rotation });
         }
         
         // Function to draw a rectangle based on GPT's response
         function drawRectangle({ x = 100, y = 100, width = 100, height = 50, color = 'black', rotation = 0 }) {
             ctx.save();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            //ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear canvas
             ctx.translate(x, y);
             ctx.rotate(rotation * Math.PI / 180);
             ctx.fillStyle = color;
             ctx.fillRect(-width / 2, -height / 2, width, height);
             ctx.restore();
+
+            // Store the shape details
+            shapes.push({ type: "rectangle", x, y, width, height, color, rotation });
         }
+
+        // Function to draw a line based on GPT's response
+        function drawLine({ x1, y1, x2, y2, color, width }) {
+            ctx.save();
+            //ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear canvas
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);  // Start point
+            ctx.lineTo(x2, y2);  // End point
+            ctx.strokeStyle = color;  // Set the color of the line
+            ctx.lineWidth = width;  // Set the width of the line
+            ctx.stroke();  // Draw the line
+            ctx.restore();
+
+            // Store the shape details
+            shapes.push({ type: "line", x1, y1, x2, y2, color, width });
+        }
+
+        // Function to clear the canvas
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clears the canvas
+        }
+        
+        // Function to redraw all shapes
+        function redrawCanvas() {
+            clearCanvas();
+            shapes.forEach(shape => {
+                if (shape.type === "circle") {
+                    drawCircle(shape);
+                } else if (shape.type === "triangle") {
+                    drawTriangle(shape);
+                }
+            });
+        }
+
+        // Function to move a shape based on GPT's response
+        function moveShape({ shape_id, direction, distance }) {
+            const shape = shapes.find(s => s.id === shape_id);
+            if (shape) {
+                switch (direction) {
+                    case 'up':
+                        shape.y -= distance;
+                        break;
+                    case 'down':
+                        shape.y += distance;
+                        break;
+                    case 'left':
+                        shape.x -= distance;
+                        break;
+                    case 'right':
+                        shape.x += distance;
+                        break;
+                }
+
+                // Redraw all shapes
+                redrawCanvas();
+            }
+        }
+
+        // Add event listener to a button for clearing the canvas
+        document.getElementById('clearBtn').addEventListener('click', clearCanvas);
     </script>
 </body>
 </html>
