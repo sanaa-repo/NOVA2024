@@ -27,8 +27,8 @@ const functionDefinitions = [
         parameters: {
             type: "object",
             properties: {
-                x: { type: "integer", description: "X-coordinate of the circle center" },
-                y: { type: "integer", description: "Y-coordinate of the circle center" },
+                x: { type: "integer", description: "X-coordinate of the circle center, the width is 500, left-most is 0,right-most is 500" },
+                y: { type: "integer", description: "Y-coordinate of the circle center, the height is 500, upper-most is 0, lower-most is 500" },
                 size: { type: "integer", description: "Radius of the circle" },
                 color: { type: "string", description: "Color of the circle" },
                 rotation: { type: "number", description: "Rotation angle in degrees" },
@@ -84,8 +84,8 @@ const functionDefinitions = [
         }
     },
     {
-        name: "move_shape",
-        description: "Moves an already drawn shape in a certain direction",
+        name: "redraw_shape",
+        description: "Redraws an already existing shape in a certain direction",
         parameters: {
             type: "object",
             properties: {
@@ -95,7 +95,32 @@ const functionDefinitions = [
             },
             required: ["shape_id", "direction", "distance"]
         }
-    }
+    },
+    {
+        name: "move_shape",
+        description: "Moves or translates the circle to a specified position or direction",
+        parameters: {
+            type: "object",
+            properties: {
+                size: { type: "integer", description: "Radius of the circle" },
+                color: { type: "string", description: "Color of the circle" },
+                rotation: { type: "number", description: "Rotation angle in degrees" },
+                positions: {
+                    type: "array",
+                    description: "A list of random (x, y) positions, of length at least 50, that gradually moves the the desired position.",
+                    items: {
+                        type: "object",
+                        properties: {
+                            x: { type: "number", description: "X position, the width is 500, left-most is 0,right-most is 500" },
+                            y: { type: "number", description: "Y position, the height is 500, upper-most is 0, lower-most is 500" },
+                        },
+                        required: ["x", "y"],
+                    },
+                },
+            },
+            required: ["positions", "size", "color", "rotation"],
+        },
+    },
 ];
 
 // In-memory storage of shapes (id, coordinates, type, etc.)
@@ -125,14 +150,15 @@ async function getMovementDistanceFromPrompt(prompt) {
 app.post('/interpret', async (req, res) => {
     const userPrompt = req.body.prompt;
 
-    // First, try to interpret the request with the model
+    // Call GPT API with function definitions
     const response = await openai.chat.completions.create({
-        model: "gpt-4o", // Or another supported model
+        model: "gpt-4o",  // Or another supported model
         messages: [{ role: "user", content: userPrompt }],
         functions: functionDefinitions,
-        function_call: "auto", // Automatically calls the relevant function
+        function_call: "auto", // Automatically call the relevant function
     });
 
+    // Get the function call result
     const functionCall = response.choices[0].message.function_call;
 
     if (functionCall.name === "draw_circle" || functionCall.name === "draw_triangle") {
