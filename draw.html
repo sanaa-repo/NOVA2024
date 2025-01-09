@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Drawing with GPT</title>
+    <style>
+        canvas { border: 1px solid black; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h3>Enter your drawing prompt:</h3>
+    <input type="text" id="prompt" placeholder="e.g., Draw a large red circle in the center">
+    <button onclick="sendPrompt()">Draw Shape</button>
+    <canvas id="canvas" width="500" height="500"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let currentShape = [];
+        let currentPositionIndex = [];
+        let shapePositions = [];
+
+        async function sendPrompt() {
+            const prompt = document.getElementById('prompt').value;
+
+            // Send prompt to the backend
+            const response = await fetch('http://localhost:3000/interpret', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            });
+            const functionCall = await response.json();
+
+            // Parse the function name and arguments from GPT’s response
+            const { name, arguments: args } = functionCall;
+            console.log(name);
+            const parameters = JSON.parse(args);
+            console.log(parameters);
+
+            // Call the corresponding function to draw the shape on the canvas
+            if (name === "draw_circle") {
+                drawCircle(parameters);
+            }  else if (name === "move_shape") {
+                moveShape(parameters);
+            }
+            else if (name === "draw_rectangle") {
+                drawRectangle(parameters);
+            } 
+            // Add other shape function calls here, e.g., drawRectangle(parameters)
+
+        }
+
+        // Function to draw a circle based on GPT's response
+        function drawCircle({ x, y, size, color, rotation }) {
+            ctx.save();
+            // ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.translate(x, y);
+            ctx.rotate(rotation * Math.PI / 180);
+            ctx.beginPath();
+            ctx.arc(0, 0, size, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function moveShape(parameters) {
+            shapePositions.push(parameters.positions); // Store the list of positions
+            currentShape.push({
+                x: 0,
+                y: 0,
+                size: parameters.size,
+                color: parameters.color,
+                rotation: parameters.rotation
+            });
+            currentPositionIndex.push(0);
+
+            // Loop through the positions and move the shape to each position
+            setInterval(() => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < currentShape.length; i++){
+                        if (currentPositionIndex[i] < shapePositions[i].length) {
+                        const { x, y } = shapePositions[i][currentPositionIndex[i]];
+
+                        // Update the circle's position and redraw it
+                        currentShape[i].x = x;
+                        currentShape[i].y = y;
+
+                        // Clear canvas and redraw the circle at the new position
+                        
+                        drawCircle(currentShape[i]); // Redraw the circle at the new position
+
+                        currentPositionIndex[i]++; // Move to the next position
+                    } else {
+                        // Loop back to the first position if we have reached the end of the list
+                        currentPositionIndex[i] = 0;
+                    }
+                }
+            }, 100); // Adjust the interval as needed (move every second)
+        }
+
+        // Define other shape functions here, e.g., drawRectangle
+        function drawRectangle({ x = 100, y = 100, width = 100, height = 50, color = 'black', rotation = 0 }) {
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.translate(x, y);
+            ctx.rotate(rotation * Math.PI / 180);
+            ctx.fillStyle = color;
+            ctx.fillRect(-width / 2, -height / 2, width, height);
+            ctx.restore();
+        }
+
+    </script>
+</body>
+</html>
