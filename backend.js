@@ -13,21 +13,21 @@ const openai = new OpenAI({
 });
 
 const functionDefinitions = [
-    {
-        name: "draw_circle",
-        description: "Draws a circle on the canvas",
-        parameters: {
-            type: "object",
-            properties: {
-                x: { type: "integer", description: "X-coordinate of the circle center, the width is 500, left-most is 0,right-most is 500" },
-                y: { type: "integer", description: "Y-coordinate of the circle center, the height is 500, upper-most is 0, lower-most is 500" },
-                size: { type: "integer", description: "Radius of the circle" },
-                color: { type: "string", description: "Color of the circle" },
-                rotation: { type: "number", description: "Rotation angle in degrees" },
-            },
-            required: ["x", "y", "size", "color"]
-        }
-    },
+    // {
+    //     name: "draw_circle",
+    //     description: "Draws a circle on the canvas",
+    //     parameters: {
+    //         type: "object",
+    //         properties: {
+    //             x: { type: "integer", description: "X-coordinate of the circle center, the width is 500, left-most is 0,right-most is 500" },
+    //             y: { type: "integer", description: "Y-coordinate of the circle center, the height is 500, upper-most is 0, lower-most is 500" },
+    //             size: { type: "integer", description: "Radius of the circle" },
+    //             color: { type: "string", description: "Color of the circle" },
+    //             rotation: { type: "number", description: "Rotation angle in degrees" },
+    //         },
+    //         required: ["x", "y", "size", "color"]
+    //     }
+    // },
     {
         name: "draw_rectangle",
         description: "Draws a rectangle on the canvas",
@@ -43,7 +43,7 @@ const functionDefinitions = [
             },
             required: ["x", "y", "width", "height", "color"]
         }
-    }
+    },
     // Additional shapes here (e.g., draw_rectangle, draw_triangle)
     {
         name: "move_shape",

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Continuous Shape Rotation</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 2px solid #333;
+            margin-top: 20px;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Continuous Shape Rotation</h2>
+<canvas id="myCanvas" width="400" height="400"></canvas>
+
+<div class="button-container">
+    <button onclick="setShape(drawCircle)">Draw & Rotate Circle</button>
+    <button onclick="setShape(drawRectangle)">Draw & Rotate Rectangle</button>
+    <button onclick="setShape(drawTriangle)">Draw & Rotate Triangle</button>
+    <button onclick="setShape(drawLine)">Draw & Rotate Line</button>
+</div>
+
+<script>
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+    let currentShape = null; // Stores the shape-drawing function
+    let rotationAngle = 0; // Initial rotation angle
+    let animationFrameId;
+
+    // Clear canvas before drawing a new shape
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Function to set the current shape and start rotating it
+    function setShape(shapeFunction) {
+        currentShape = shapeFunction; // Set the current shape
+        rotationAngle = 0; // Reset the rotation angle
+        cancelAnimationFrame(animationFrameId); // Stop any ongoing animation
+        animateRotation(); // Start the rotation animation
+    }
+
+    // Animation loop for continuous rotation
+    function animateRotation() {
+        clearCanvas(); // Clear the canvas
+        rotationAngle += 0.02; // Increase rotation angle for smooth rotation
+
+        if (currentShape) {
+            currentShape(rotationAngle); // Call the shape function with the updated angle
+        }
+
+        animationFrameId = requestAnimationFrame(animateRotation); // Loop the animation
+    }
+
+    // Draw a Circle with rotation
+    function drawCircle(rotation = 0) {
+        ctx.save();
+        ctx.translate(200, 200); // Move context to circle's center
+        ctx.rotate(rotation); // Rotate the context
+        ctx.beginPath();
+        ctx.arc(0, 0, 50, 0, Math.PI * 2, true); // Draw circle at origin
+        ctx.fillStyle = 'blue';
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // Draw a Rectangle with rotation
+    function drawRectangle(rotation = 0) {
+        ctx.save();
+        ctx.translate(200, 200); // Move context to rectangle's center
+        ctx.rotate(rotation); // Rotate the context
+        ctx.beginPath();
+        ctx.rect(-50, -30, 100, 60); // Draw rectangle centered at origin
+        ctx.fillStyle = 'green';
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // Draw a Triangle with rotation
+    function drawTriangle(rotation = 0) {
+        ctx.save();
+        ctx.translate(200, 200); // Move context to triangle's center
+        ctx.rotate(rotation); // Rotate the context
+        ctx.beginPath();
+        ctx.moveTo(0, -50); // Move to the top point of triangle
+        ctx.lineTo(-50, 50); // Bottom left
+        ctx.lineTo(50, 50);  // Bottom right
+        ctx.closePath();
+        ctx.fillStyle = 'red';
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // Draw a Line with rotation
+    function drawLine(rotation = 0) {
+        ctx.save();
+        ctx.translate(200, 200); // Move context to line's center
+        ctx.rotate(rotation); // Rotate the context
+        ctx.beginPath();
+        ctx.moveTo(-100, 0); // Start line to the left of center
+        ctx.lineTo(100, 0);  // End line to the right of center
+        ctx.strokeStyle = 'purple';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.restore();
+    }
+</script>
+
+</body>
+</html>
